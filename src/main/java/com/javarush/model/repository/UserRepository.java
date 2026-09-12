@@ -2,6 +2,8 @@ package com.javarush.model.repository;
 
 import com.javarush.model.entity.User;
 import com.javarush.model.entity.enums.Role;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -13,14 +15,13 @@ import java.util.Set;
 public interface UserRepository extends JpaRepository<User, Long> {
 
     boolean existsByEmail(String email);
-    boolean existsByName(String name);
+    boolean existsByUserName(String userName);
     boolean existsByEmailAndIdNot(String email, Long id);
-    boolean existsByNameAndIdNot(String name, Long id);
+    boolean existsByUserNameAndIdNot(String userName, Long id);
 
     Optional<User> findUserByEmail(String email);
-    Optional<User> findUserByName(String name);
+    Optional<User> findUserByUserName(String userName);
     Optional<User> findUserById(Long id);
 
     List<User> findAllUsersByRole(Role role);
-    Set<User> findAllUsers();
 }

@@ -10,11 +10,12 @@ import com.javarush.model.entity.User;
 import com.javarush.model.entity.enums.Role;
 import com.javarush.model.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -22,22 +23,23 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
-    public void createUser(UserRegistrationDto dto) {
+    public User createUser(UserRegistrationDto dto) {
         if (userRepository.existsByEmail(dto.getEmail())) {
             throw new UserAlreadyExistsException("Пользователь с таким email уже существует");
         }
 
-        if (userRepository.existsByName(dto.getName())) {
+        if (userRepository.existsByUserName(dto.getUserName())) {
             throw new UserAlreadyExistsException("Пользователь с таким именем уже существует");
         }
 
         User user = new User();
-        user.setName(dto.getName());
+        user.setUserName(dto.getUserName());
         user.setEmail(dto.getEmail());
         user.setPassword(passwordEncoder.encode(dto.getPassword()));
         user.setRole(Role.USER);
 
         userRepository.save(user);
+        return user;
     }
 
     public User getUserById(Long id) {
@@ -54,22 +56,22 @@ public class UserService {
                             );
     }
 
-    public User getUserByName(String name) {
-        return userRepository.findUserByName(name)
+    public User getUserByName(String userName) {
+        return userRepository.findUserByUserName(userName)
                             .orElseThrow(
-                                    () -> new UserNotFoundException("Пользователь с именем: " + name + " не найден")
+                                    () -> new UserNotFoundException("Пользователь с именем: " + userName + " не найден")
                             );
     }
 
-    public List<User> getUserByRole(Role role) {
+    public List<User> getUsersByRole(Role role) {
         return userRepository.findAllUsersByRole(role);
     }
 
-    public Set<User> getAllUsers() {
-        return userRepository.findAllUsers();
+    public Page<User> getAllUsers(Pageable pageable) {
+        return (Page<User>) userRepository.findAll();
     }
 
-    public void updateUser(Long id, UserUpdateDto dto) {
+    public User updateUser(Long id, UserUpdateDto dto) {
         User user = userRepository.findUserById(id)
                                 .orElseThrow(
                                     () -> new UserNotFoundException("Пользователь с id:" + id + " не найден")
@@ -83,15 +85,16 @@ public class UserService {
             user.setEmail(dto.getEmail());
         }
 
-        if (dto.getName() != null && !dto.getName().isEmpty()) {
-            if (userRepository.existsByNameAndIdNot(dto.getName(), id)) {
+        if (dto.getUserName() != null && !dto.getUserName().isEmpty()) {
+            if (userRepository.existsByUserNameAndIdNot(dto.getUserName(), id)) {
                 throw new UserAlreadyExistsException("Пользователь с таким именем уже существует");
             }
 
-            user.setName(dto.getName());
+            user.setUserName(dto.getUserName());
         }
 
         userRepository.save(user);
+        return user;
     }
 
     public void deleteUser(Long id) {

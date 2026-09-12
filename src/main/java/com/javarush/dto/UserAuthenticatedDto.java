@@ -3,18 +3,15 @@ package com.javarush.dto;
 import jakarta.validation.constraints.*;
 import lombok.*;
 
+
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
 @Setter
-public class UserRegistrationDto {
+public class UserAuthenticatedDto {
     @NotBlank(message = "Имя обязательно")
     @Size(min = 3, max = 20, message = "Имя от 3 до 20 символов")
     private String userName;
-
-    @NotBlank(message = "Email обязателен")
-    @Email(message = "Неверный формат email")
-    private String email;
 
     @NotBlank(message = "Пароль обязателен")
     @Pattern(
@@ -23,5 +20,4 @@ public class UserRegistrationDto {
                     "цифры, заглавные и строчные буквы, спецсимволы"
     )
     private String password;
-
 }
