@@ -1,0 +1,6 @@
+package com.javarush.exception;
+
+public class UnauthorizedException extends RuntimeException {
+    public UnauthorizedException(String message) {
+    }
+}

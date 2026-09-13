@@ -1,11 +1,12 @@
 package com.javarush.controller;
 
-import com.javarush.dto.ChangePasswordDto;
-import com.javarush.dto.ChangeRoleDto;
-import com.javarush.dto.UserResponseDto;
-import com.javarush.dto.UserUpdateDto;
+import com.javarush.dto.user.ChangePasswordDto;
+import com.javarush.dto.user.ChangeRoleDto;
+import com.javarush.dto.user.UserResponseDto;
+import com.javarush.dto.user.UserUpdateDto;
 import com.javarush.model.entity.User;
 import com.javarush.model.entity.enums.Role;
+import com.javarush.security.UserPrincipal;
 import com.javarush.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -13,10 +14,14 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
+
 
 @RestController
 @RequestMapping("/users")
@@ -89,8 +94,26 @@ public class UserController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
-        userService.deleteUser(id);
-        return ResponseEntity.noContent().build();
+    @PreAuthorize("hasRole('SUPER_ADMIN') or #id == authentication.principal.id")
+    public ResponseEntity<String> deleteUser(@PathVariable Long id,
+                                             @AuthenticationPrincipal UserPrincipal currentUser) {
+        userService.softDeleteUser(id, currentUser.getId());
+        return ResponseEntity.ok("Пользователь удален");
+    }
+
+    @PostMapping("/{id}/restore")
+    @PreAuthorize("hasRole('SUPER_ADMIN')")
+    public ResponseEntity<UserResponseDto> restoreUser(@PathVariable Long id) {
+        User user = userService.restoreUser(id);
+        return ResponseEntity.ok(UserResponseDto.fromEntity(user));
+    }
+
+    @GetMapping("/deleted")
+    @PreAuthorize("hasRole('SUPER_ADMIN')")
+    public ResponseEntity<List<UserResponseDto>> getDeletedUsers() {
+        Set<User> users = userService.getAllDeletedUsers();
+        return ResponseEntity.ok(
+                users.stream().map(UserResponseDto::fromEntity).toList()
+        );
     }
 }

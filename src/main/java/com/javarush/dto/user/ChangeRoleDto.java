@@ -1,8 +1,11 @@
-package com.javarush.dto;
+package com.javarush.dto.user;
 
 import com.javarush.model.entity.enums.Role;
 import jakarta.validation.constraints.NotBlank;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @AllArgsConstructor
 @NoArgsConstructor

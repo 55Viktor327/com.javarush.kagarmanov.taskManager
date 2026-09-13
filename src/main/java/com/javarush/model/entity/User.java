@@ -2,18 +2,27 @@ package com.javarush.model.entity;
 
 import com.javarush.model.entity.enums.Role;
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-import java.util.*;
+import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Objects;
+import java.util.Set;
 
 @Entity
 @Table(name = "users")
+@NoArgsConstructor
+@Getter
+@Setter
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(name = "username", nullable = false, unique = true)
-    private String userName;
+    private String username;
 
     @Column(name = "email", nullable = false, unique = true)
     private String email;
@@ -31,64 +40,14 @@ public class User {
     @OneToMany(mappedBy = "owner", cascade = CascadeType.PERSIST)
     private Set<Task> ownedTasks = new HashSet<>();
 
-    public User() {
-    }
+    @Column(name = "deleted", nullable = false)
+    private boolean deleted = false;
 
-    public Long getId() {
-        return id;
-    }
+    @Column(name = "deleted_at")
+    private LocalDateTime deletedAt;
 
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getUserName() {
-        return userName;
-    }
-
-    public void setUserName(String userName) {
-        this.userName = userName;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public Role getRole() {
-        return role;
-    }
-
-    public void setRole(Role role) {
-        this.role = role;
-    }
-
-    public Set<Task> getAssignedTasks() {
-        return assignedTasks;
-    }
-
-    public void setAssignedTasks(Set<Task> assignedTasks) {
-        this.assignedTasks = assignedTasks;
-    }
-
-    public Set<Task> getOwnedTasks() {
-        return ownedTasks;
-    }
-
-    public void setOwnedTasks(Set<Task> ownedTasks) {
-        this.ownedTasks = ownedTasks;
-    }
+    @Column(name = "deleted_by")
+    private Long deletedBy;
 
     @Override
     public boolean equals(Object o) {

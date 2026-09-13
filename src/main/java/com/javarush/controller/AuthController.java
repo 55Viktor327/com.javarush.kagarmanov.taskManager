@@ -1,7 +1,7 @@
 package com.javarush.controller;
 
-import com.javarush.dto.UserAuthenticatedDto;
-import com.javarush.dto.UserRegistrationDto;
+import com.javarush.dto.user.UserAuthenticatedDto;
+import com.javarush.dto.user.UserRegistrationDto;
 import com.javarush.model.entity.User;
 import com.javarush.service.UserService;
 import jakarta.validation.Valid;
@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import com.javarush.dto.UserResponseDto;
+import com.javarush.dto.user.UserResponseDto;
 
 @RestController
 @RequestMapping("/auth")

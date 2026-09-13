@@ -1,13 +1,327 @@
 package com.javarush.service;
 
+import com.javarush.dto.task.*;
+import com.javarush.exception.*;
+import com.javarush.model.entity.Task;
+import com.javarush.model.entity.User;
+import com.javarush.model.entity.enums.TaskStatus;
+import com.javarush.model.entity.enums.TaskPriority;
 import com.javarush.model.repository.TaskRepository;
+import com.javarush.model.repository.UserRepository;
+import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-@Service
-public class TaskService {
-    private final TaskRepository repo;
+import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
-    public TaskService(TaskRepository repo) {
-        this.repo = repo;
+@Service
+@RequiredArgsConstructor
+public class TaskService {
+    private final TaskRepository taskRepository;
+    private final UserRepository userRepository;
+
+    @Transactional
+    public Task createTask(TaskCreateRequest request, Long ownerId) {
+
+        if(taskRepository.existsTaskByTitle(request.getTitle())){
+            throw new TaskAlreadyExistsException("Задача с таким названием уже создана");
+        }
+
+        User owner = userRepository.findActiveById(ownerId)
+                .orElseThrow(
+                        () -> new UserNotFoundException("Пользователь с id:" + ownerId + " не найден")
+                );
+
+        Task task = new Task();
+        task.setTitle(request.getTitle());
+        task.setDescription(request.getDescription());
+        task.setPriority(TaskPriority.LOW);
+        task.setStatus(TaskStatus.NEW);
+        task.setCreatedAt(LocalDateTime.now());
+        task.setDeadline(request.getDeadline());
+        task.setOwner(owner);
+
+        if (request.getAssigneeIds() != null && !request.getAssigneeIds().isEmpty()) {
+            Set<User> assignees = new HashSet<>(
+                    userRepository.findAllActiveByIds(request.getAssigneeIds())
+            );
+
+            if (assignees.size() != request.getAssigneeIds().size()) {
+                throw new UserNotFoundException("Некоторые исполнители не найдены");
+            }
+
+            assignees.removeIf(u -> u.getId().equals(ownerId));
+
+            task.setAssignees(assignees);
+        }
+
+        return taskRepository.save(task);
+    }
+
+    public Task getTaskById(Long id){
+        Optional<Task> task = taskRepository.findActiveById(id);
+        if(task.isEmpty()){
+            throw new TaskNotFoundException("Задача не найдена");
+        }
+
+        return task.get();
+    }
+
+    public Task getTaskByTitle(String title){
+        Optional<Task> task = taskRepository.findActiveByTitle(title);
+        if(task.isEmpty()){
+            throw new TaskNotFoundException("Задача не найдена");
+        }
+
+        return task.get();
+    }
+
+    public List<Task> getTasksByPriority(TaskPriority priority){
+        List<Task> tasks = taskRepository.findActiveByPriority(priority);
+        if(tasks.isEmpty()){
+            throw new TaskNotFoundException("Задачи не найдены");
+        }
+
+        return tasks;
+    }
+
+    public List<Task> getTasksByStatus(TaskStatus taskStatus){
+        List<Task> tasks = taskRepository.findActiveByStatus(taskStatus);
+        if(tasks.isEmpty()){
+            throw new TaskNotFoundException("Задачи не найдены");
+        }
+
+        return tasks;
+    }
+
+    public List<Task> getTasksByCreatedAt(LocalDateTime data){
+        List<Task> tasks = taskRepository.findActiveByCreatedAt(data);
+        if(tasks.isEmpty()){
+            throw new TaskNotFoundException("Задачи не найдены");
+        }
+
+        return tasks;
+    }
+
+    public List<Task> getTasksByDeadline(LocalDateTime deadline){
+        List<Task> tasks = taskRepository.findActiveByDeadline(deadline);
+        if(tasks.isEmpty()){
+            throw new TaskNotFoundException("Задачи не найдены");
+        }
+
+        return tasks;
+    }
+
+    public List<Task> getTasksByOwner(Long ownerId) {
+        return taskRepository.findActiveByOwnerId(ownerId);
+    }
+
+    public List<Task> getTasksByAssignee(Long userId) {
+        return taskRepository.findActiveByAssigneeId(userId);
+    }
+
+    public List<TaskResponseDto> getAllTasks() {
+        return taskRepository.findAllActive().stream()
+                .map(TaskResponseDto::fromEntity)
+                .toList();
+    }
+
+    public List<TaskListDto> getAllTasksForGuest() {
+        return taskRepository.findAllActive().stream()
+                .map(TaskListDto::fromEntity)
+                .toList();
+    }
+
+    @Transactional
+    public Task updateTitle(Long id, UpdateTitleRequest request){
+        Task task = taskRepository.findActiveById(id)
+                .orElseThrow(
+                        () -> new TaskNotFoundException("Задача не найдена")
+                );
+
+        if (request.getTitle() != null && !request.getTitle().isBlank()) {
+            if (taskRepository.existsTaskByTitleAndIdNot(request.getTitle(), id)) {
+                throw new TaskAlreadyExistsException("Задача с таким названием уже есть");
+            }
+            task.setTitle(request.getTitle());
+        }
+
+        taskRepository.save(task);
+        return task;
+    }
+
+    @Transactional
+    public Task updateDescription(Long id, UpdateDescriptionRequest request){
+        Task task = taskRepository.findActiveById(id)
+                .orElseThrow(
+                        () -> new TaskNotFoundException("Задача не найдена")
+                );
+
+        if (request.getDescription() != null && !request.getDescription().isBlank()) {
+
+            task.setDescription(request.getDescription());
+        }
+
+        taskRepository.save(task);
+        return task;
+    }
+
+    @Transactional
+    public Task updatePriority(Long id, UpdatePriorityRequest request) {
+        Task task = taskRepository.findActiveById(id)
+                .orElseThrow(
+                        () -> new TaskNotFoundException("Задача не найдена")
+                );
+
+        if (request.getPriority() != null) {
+
+            task.setPriority(request.getPriority());
+        }
+
+        taskRepository.save(task);
+        return task;
+    }
+
+    @Transactional
+    public Task updateStatus(Long id, UpdateStatusRequest request){
+        Task task = taskRepository.findActiveById(id)
+                .orElseThrow(
+                        () -> new TaskNotFoundException("Задача не найдена")
+                );
+
+        if (request.getStatus() != null) {
+
+            task.setStatus(request.getStatus());
+        }
+
+        taskRepository.save(task);
+        return task;
+    }
+
+    @Transactional
+    public Task updateDeadline(Long id, UpdateDeadlineRequest request){
+        Task task = taskRepository.findActiveById(id)
+                .orElseThrow(
+                        () -> new TaskNotFoundException("Задача не найдена")
+                );
+
+        if (request.getNewDeadline() != null) {
+
+            task.setDeadline(request.getNewDeadline());
+        }
+
+        taskRepository.save(task);
+        return task;
+    }
+
+
+    @Transactional
+    public Task assignUser(Long taskId, Long userId){
+        Task task = taskRepository.findActiveById(taskId)
+                .orElseThrow(
+                        () -> new TaskNotFoundException("Задача не найдена")
+                );
+
+        User user = userRepository.findActiveById(userId)
+                .orElseThrow(
+                        () -> new UserNotFoundException("Пользователь с id:" + userId + " не найден")
+                );
+
+        if (task.getOwner() != null && task.getOwner().getId().equals(userId)) {
+            throw new InvalidOperationException("Владелец уже работает над задачей");
+        }
+
+        if (task.getAssignees().contains(user)) {
+            throw new UserAlreadyAssignedException("Пользователь уже назначен на задачу");
+        }
+
+        task.getAssignees().add(user);
+        task.setUpdatedAt(LocalDateTime.now());
+
+        return taskRepository.save(task);
+    }
+
+    @Transactional
+    public Task removeUser(Long taskId, Long userId) {
+        Task task = taskRepository.findActiveById(taskId)
+                .orElseThrow(() -> new TaskNotFoundException("Задача не найдена: " + taskId));
+
+        boolean removed = task.getAssignees().removeIf(u -> u.getId().equals(userId));
+
+        if (!removed) {
+            throw new UserNotAssignedException("Пользователь не назначен на задачу");
+        }
+
+        task.setUpdatedAt(LocalDateTime.now());
+        return taskRepository.save(task);
+    }
+
+    @Transactional
+    public Task setAssignees(Long taskId, Set<Long> userIds) {
+        Task task = taskRepository.findActiveById(taskId)
+                .orElseThrow(() -> new TaskNotFoundException("Задача не найдена: " + taskId));
+
+        Set<User> users = new HashSet<>(userRepository.findAllActiveByIds(userIds));
+
+        if (users.size() != userIds.size()) {
+            throw new UserNotFoundException("Некоторые пользователи не найдены");
+        }
+
+        if (task.getOwner() != null) {
+            users.removeIf(u -> u.getId().equals(task.getOwner().getId()));
+        }
+
+        task.getAssignees().clear();
+        task.getAssignees().addAll(users);
+        task.setUpdatedAt(LocalDateTime.now());
+
+        return taskRepository.save(task);
+    }
+
+    @Transactional
+    public void softDeleteTask(Long id, Long deletedBy){
+        Task task = taskRepository.findActiveById(id)
+                .orElseThrow(
+                        () -> new TaskNotFoundException("Задача не найдена")
+                );
+
+        if(task.isDeleted()){
+            throw new TaskAlreadyDeleteException("Задача уже удалена");
+        }
+
+        task.setDeleted(true);
+        task.setDeletedAt(LocalDateTime.now());
+        task.setDeletedBy(deletedBy);
+
+        taskRepository.save(task);
+        System.out.printf("Задача с %d успешно удалена", id);
+    }
+
+    @Transactional
+    public Task restoreTask(Long id){
+        Task task = taskRepository.findDeletedById(id)
+                .orElseThrow(
+                        () -> new TaskNotFoundException("Задача не найдена")
+                );
+
+        if(!task.isDeleted()){
+            throw new TaskNotDeletedException("Задача не была удалена");
+        }
+
+        task.setDeleted(false);
+        task.setDeletedAt(null);
+        task.setDeletedBy(null);
+
+        Task restored = taskRepository.save(task);
+        System.out.println("Задача успешно восстановлена");
+        return restored;
+    }
+
+    public List<Task> getAllDeletedTasks(){
+        return taskRepository.findAllDeleted();
     }
 }

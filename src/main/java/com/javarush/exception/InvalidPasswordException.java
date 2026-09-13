@@ -1,4 +1,4 @@
-package com.javarush.exeption;
+package com.javarush.exception;
 
 public class InvalidPasswordException extends RuntimeException{
     public InvalidPasswordException() {

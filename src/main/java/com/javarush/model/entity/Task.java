@@ -1,14 +1,25 @@
 package com.javarush.model.entity;
 
 import com.javarush.model.entity.enums.TaskStatus;
-import com.javarush.model.entity.enums.TaskUrgently;
+import com.javarush.model.entity.enums.TaskPriority;
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import org.springframework.data.annotation.CreatedBy;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.HashSet;
+import java.util.Objects;
+import java.util.Set;
 
+@EntityListeners(AuditingEntityListener.class)
 @Entity
 @Table(name = "tasks")
+@Getter
+@Setter
+@NoArgsConstructor
 public class Task {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -21,15 +32,18 @@ public class Task {
     private String description;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "urgently")
-    private TaskUrgently urgently;
+    @Column(name = "priority")
+    private TaskPriority priority;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
     private TaskStatus status;
 
-    @Column(name = "dead_line", nullable = false)
-    private LocalDateTime deadLine;
+    @Column(name = "created_at", nullable = false)
+    private LocalDateTime createdAt;
+
+    @Column(name = "deadline", nullable = false)
+    private LocalDateTime deadline;
 
     @ManyToMany
     @JoinTable(
@@ -39,86 +53,25 @@ public class Task {
     )
     private Set<User> assignees = new HashSet<>();
 
+    @CreatedBy
     @ManyToOne
-    @JoinColumn(name = "owner_id")
+    @JoinColumn(name = "owner_id", nullable = false, updatable = false)
     private User owner;
+
+    @Column(name = "deleted")
+    private boolean deleted = false;
+
+    @Column(name = "deleted_at")
+    private LocalDateTime deletedAt;
+
+    @Column(name = "deleted_by")
+    private Long deletedBy;
+
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
 
 //    @Column(name = "files")
 //    private List<String> fileUrls = new ArrayList<>();
-
-    public Task () {}
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getTitle() {
-        return title;
-    }
-
-    public void setTitle(String title) {
-        this.title = title;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public TaskUrgently getUrgently() {
-        return urgently;
-    }
-
-    public void setUrgently(TaskUrgently urgently) {
-        this.urgently = urgently;
-    }
-
-    public TaskStatus getStatus() {
-        return status;
-    }
-
-    public void setStatus(TaskStatus status) {
-        this.status = status;
-    }
-
-    public LocalDateTime getDeadLine() {
-        return deadLine;
-    }
-
-    public void setDeadLine(LocalDateTime deadLine) {
-        this.deadLine = deadLine;
-    }
-
-    public Set<User> getAssignees() {
-        return assignees;
-    }
-
-    public void setAssignees(Set<User> assignees) {
-        this.assignees = assignees;
-    }
-
-    public User getOwner() {
-        return owner;
-    }
-
-    public void setOwner(User owner) {
-        this.owner = owner;
-    }
-
-//    public List<String> getFileUrls() {
-//        return fileUrls;
-//    }
-//
-//    public void setFileUrls(List<String> fileUrls) {
-//        this.fileUrls = fileUrls;
-//    }
 
     @Override
     public boolean equals(Object o) {
