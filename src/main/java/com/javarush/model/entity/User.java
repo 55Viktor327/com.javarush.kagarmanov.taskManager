@@ -32,7 +32,7 @@ public class User {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "role", nullable = false)
-    private Role role = Role.GUEST;
+    private Role role;
 
     @ManyToMany(mappedBy = "assignees")
     private Set<Task> assignedTasks = new HashSet<>();

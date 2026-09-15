@@ -36,11 +36,18 @@ public class TaskController {
                 .body(TaskResponseDto.fromEntity(task));
     }
 
-    @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('USER', 'ADMIN', 'SUPER_ADMIN')")
-    public ResponseEntity<TaskResponseDto> getTaskById(@PathVariable Long id){
-        Task task = taskService.getTaskById(id);
-        return ResponseEntity.ok(TaskResponseDto.fromEntity(task));
+    @GetMapping
+    @PreAuthorize("hasAnyRole('GUEST', 'USER', 'ADMIN', 'SUPER_ADMIN')")
+    public ResponseEntity<?> getAllTasks(
+            @AuthenticationPrincipal UserPrincipal currentUser) {
+
+        if (currentUser.getRole() == Role.GUEST) {
+            List<TaskListDto> tasks = taskService.getAllTasksForGuest();
+            return ResponseEntity.ok(tasks);
+        }
+
+        List<TaskResponseDto> tasks = taskService.getAllTasks();
+        return ResponseEntity.ok(tasks);
     }
 
     @GetMapping("/by-title")
@@ -72,7 +79,7 @@ public class TaskController {
         );
     }
 
-    @GetMapping("/by-cretedAt")
+    @GetMapping("/by-createdAt")
     @PreAuthorize("hasAnyRole('USER', 'ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<List<TaskResponseDto>> getTasksByCreatedAt(@RequestParam LocalDateTime data){
         List<Task> tasks = taskService.getTasksByCreatedAt(data);
@@ -108,18 +115,21 @@ public class TaskController {
         return ResponseEntity.ok(tasks.stream().map(TaskResponseDto::fromEntity).toList());
     }
 
-    @GetMapping
-    @PreAuthorize("hasAnyRole('GUEST', 'USER', 'ADMIN', 'SUPER_ADMIN')")
-    public ResponseEntity<?> getAllTasks(
-            @AuthenticationPrincipal UserPrincipal currentUser) {
 
-        if (currentUser.getRole() == Role.GUEST) {
-            List<TaskListDto> tasks = taskService.getAllTasksForGuest();
-            return ResponseEntity.ok(tasks);
-        }
+    @GetMapping("/deleted")
+    @PreAuthorize("hasRole('SUPER_ADMIN')")
+    public ResponseEntity<List<TaskResponseDto>> getDeletedTasks(){
+        List<Task> tasks = taskService.getAllDeletedTasks();
+        return ResponseEntity.ok(
+                tasks.stream().map(TaskResponseDto :: fromEntity).toList()
+        );
+    }
 
-        List<TaskResponseDto> tasks = taskService.getAllTasks();
-        return ResponseEntity.ok(tasks);
+    @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN', 'SUPER_ADMIN')")
+    public ResponseEntity<TaskResponseDto> getTaskById(@PathVariable Long id){
+        Task task = taskService.getTaskById(id);
+        return ResponseEntity.ok(TaskResponseDto.fromEntity(task));
     }
 
     @PatchMapping("/{id}/title")
@@ -208,14 +218,5 @@ public class TaskController {
     public ResponseEntity<TaskResponseDto> restoreTask(@PathVariable Long id){
         Task task = taskService.restoreTask(id);
         return ResponseEntity.ok(TaskResponseDto.fromEntity(task));
-    }
-
-    @GetMapping("/deleted")
-    @PreAuthorize("hasRole('SUPER_ADMIN')")
-    public ResponseEntity<List<TaskResponseDto>> getDeletedTasks(){
-        List<Task> tasks = taskService.getAllDeletedTasks();
-        return ResponseEntity.ok(
-                tasks.stream().map(TaskResponseDto :: fromEntity).toList()
-        );
     }
 }

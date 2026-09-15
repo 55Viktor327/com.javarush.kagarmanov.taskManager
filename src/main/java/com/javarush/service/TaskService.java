@@ -8,7 +8,8 @@ import com.javarush.model.entity.enums.TaskStatus;
 import com.javarush.model.entity.enums.TaskPriority;
 import com.javarush.model.repository.TaskRepository;
 import com.javarush.model.repository.UserRepository;
-import jakarta.transaction.Transactional;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -20,12 +21,15 @@ import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class TaskService {
     private final TaskRepository taskRepository;
     private final UserRepository userRepository;
 
     @Transactional
     public Task createTask(TaskCreateRequest request, Long ownerId) {
+
+        log.info("Создание задачи: title={}, ownerId={}", request.getTitle(), ownerId);
 
         if(taskRepository.existsTaskByTitle(request.getTitle())){
             throw new TaskAlreadyExistsException("Задача с таким названием уже создана");
@@ -59,9 +63,12 @@ public class TaskService {
             task.setAssignees(assignees);
         }
 
-        return taskRepository.save(task);
+        taskRepository.save(task);
+        log.info("Задача создана: id={}, title={}", task.getId(), task.getTitle());
+        return task;
     }
 
+    @Transactional(readOnly = true)
     public Task getTaskById(Long id){
         Optional<Task> task = taskRepository.findActiveById(id);
         if(task.isEmpty()){
@@ -71,6 +78,7 @@ public class TaskService {
         return task.get();
     }
 
+    @Transactional(readOnly = true)
     public Task getTaskByTitle(String title){
         Optional<Task> task = taskRepository.findActiveByTitle(title);
         if(task.isEmpty()){
@@ -80,6 +88,7 @@ public class TaskService {
         return task.get();
     }
 
+    @Transactional(readOnly = true)
     public List<Task> getTasksByPriority(TaskPriority priority){
         List<Task> tasks = taskRepository.findActiveByPriority(priority);
         if(tasks.isEmpty()){
@@ -89,6 +98,7 @@ public class TaskService {
         return tasks;
     }
 
+    @Transactional(readOnly = true)
     public List<Task> getTasksByStatus(TaskStatus taskStatus){
         List<Task> tasks = taskRepository.findActiveByStatus(taskStatus);
         if(tasks.isEmpty()){
@@ -98,6 +108,7 @@ public class TaskService {
         return tasks;
     }
 
+    @Transactional(readOnly = true)
     public List<Task> getTasksByCreatedAt(LocalDateTime data){
         List<Task> tasks = taskRepository.findActiveByCreatedAt(data);
         if(tasks.isEmpty()){
@@ -107,6 +118,7 @@ public class TaskService {
         return tasks;
     }
 
+    @Transactional(readOnly = true)
     public List<Task> getTasksByDeadline(LocalDateTime deadline){
         List<Task> tasks = taskRepository.findActiveByDeadline(deadline);
         if(tasks.isEmpty()){
@@ -116,20 +128,24 @@ public class TaskService {
         return tasks;
     }
 
+    @Transactional(readOnly = true)
     public List<Task> getTasksByOwner(Long ownerId) {
         return taskRepository.findActiveByOwnerId(ownerId);
     }
 
+    @Transactional(readOnly = true)
     public List<Task> getTasksByAssignee(Long userId) {
         return taskRepository.findActiveByAssigneeId(userId);
     }
 
+    @Transactional(readOnly = true)
     public List<TaskResponseDto> getAllTasks() {
-        return taskRepository.findAllActive().stream()
+        return taskRepository.findAllActiveWithDetails().stream()
                 .map(TaskResponseDto::fromEntity)
                 .toList();
     }
 
+    @Transactional(readOnly = true)
     public List<TaskListDto> getAllTasksForGuest() {
         return taskRepository.findAllActive().stream()
                 .map(TaskListDto::fromEntity)
@@ -151,6 +167,7 @@ public class TaskService {
         }
 
         taskRepository.save(task);
+        log.info("Задача обновлена: id={}, title={}", task.getId(), task.getTitle());
         return task;
     }
 
@@ -167,6 +184,7 @@ public class TaskService {
         }
 
         taskRepository.save(task);
+        log.info("Описание задачи id={} обновлено", task.getId());
         return task;
     }
 
@@ -183,6 +201,7 @@ public class TaskService {
         }
 
         taskRepository.save(task);
+        log.info("Приоритет задачи id={} обновлен", task.getId());
         return task;
     }
 
@@ -199,6 +218,7 @@ public class TaskService {
         }
 
         taskRepository.save(task);
+        log.info("Статус задачи id={} обновлен", task.getId());
         return task;
     }
 
@@ -215,6 +235,7 @@ public class TaskService {
         }
 
         taskRepository.save(task);
+        log.info("Deadline задачи id={} обновлен - deadline={}", task.getId(), task.getDeadline());
         return task;
     }
 
@@ -242,7 +263,9 @@ public class TaskService {
         task.getAssignees().add(user);
         task.setUpdatedAt(LocalDateTime.now());
 
-        return taskRepository.save(task);
+        taskRepository.save(task);
+        log.info("Пользователь username={} назначен на задачу title={}", user.getUsername(), task.getTitle());
+        return task;
     }
 
     @Transactional
@@ -257,7 +280,9 @@ public class TaskService {
         }
 
         task.setUpdatedAt(LocalDateTime.now());
-        return taskRepository.save(task);
+        taskRepository.save(task);
+        log.info("Пользователь username={} исключен из задачи title={}", userRepository.findActiveById(userId).get().getUsername(), task.getTitle());
+        return task;
     }
 
     @Transactional
@@ -279,7 +304,9 @@ public class TaskService {
         task.getAssignees().addAll(users);
         task.setUpdatedAt(LocalDateTime.now());
 
-        return taskRepository.save(task);
+        taskRepository.save(task);
+        log.info("Пользователи добавлены в задачу title={}", task.getTitle());
+        return task;
     }
 
     @Transactional
@@ -298,7 +325,7 @@ public class TaskService {
         task.setDeletedBy(deletedBy);
 
         taskRepository.save(task);
-        System.out.printf("Задача с %d успешно удалена", id);
+        log.info("Задача с id={} успешно удалена", id);
     }
 
     @Transactional
@@ -317,10 +344,12 @@ public class TaskService {
         task.setDeletedBy(null);
 
         Task restored = taskRepository.save(task);
-        System.out.println("Задача успешно восстановлена");
+        log.info("Задача title={} восстановлена в БД", task.getTitle());
+
         return restored;
     }
 
+    @Transactional(readOnly = true)
     public List<Task> getAllDeletedTasks(){
         return taskRepository.findAllDeleted();
     }

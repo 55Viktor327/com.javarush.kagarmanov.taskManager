@@ -12,6 +12,7 @@ import com.javarush.model.repository.TaskRepository;
 import com.javarush.model.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AccessDeniedException;
@@ -25,6 +26,7 @@ import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
@@ -32,6 +34,7 @@ public class UserService {
 
     @Transactional
     public User createUser(UserRegistrationDto dto) {
+        log.info("Сщздание пользователя");
         if (userRepository.existsActiveByEmail(dto.getEmail())) {
             throw new UserAlreadyExistsException("Пользователь с таким email уже существует");
         }
@@ -44,9 +47,10 @@ public class UserService {
         user.setUsername(dto.getUserName());
         user.setEmail(dto.getEmail());
         user.setPassword(passwordEncoder.encode(dto.getPassword()));
-        user.setRole(Role.USER);
+        user.setRole(Role.GUEST);
 
         userRepository.save(user);
+        log.info("Пользователь username={} успешно создан", user.getUsername());
         return user;
     }
 
@@ -102,6 +106,7 @@ public class UserService {
         }
 
         userRepository.save(user);
+        log.info("Данные пользователя username={} обновлены", user.getUsername());
         return user;
     }
 
@@ -119,7 +124,7 @@ public class UserService {
         String updatedPassword = passwordEncoder.encode(dto.getNewPassword());
         userWithOldPassword.setPassword(updatedPassword);
         userRepository.save(userWithOldPassword);
-        System.out.println("Пароль успешно изменен");
+        log.info("Пароль успешно изменен");
     }
 
     @Transactional
@@ -131,6 +136,7 @@ public class UserService {
 
         updetedRoleUser.setRole(dto.getRole());
         userRepository.save(updetedRoleUser);
+        log.info("Права пользователя username={} изменены на role={}",updetedRoleUser.getUsername(), updetedRoleUser.getRole());
     }
 
     @Transactional
@@ -168,7 +174,7 @@ public class UserService {
 
         userRepository.save(user);
 
-        System.out.printf("Пользователь с %d успешно удален", id);
+        log.info("Пользователь username={} удалил пользователя username={}", superAdmin.getUsername(), user.getUsername());
     }
 
     @Transactional
@@ -193,7 +199,7 @@ public class UserService {
         user.setEmail(restoredEmail);
 
         User restored = userRepository.save(user);
-        System.out.println("Пользователь успешно восстановлен");
+        log.info("Пользователь успешно восстановлен");
         return restored;
     }
 
