@@ -10,7 +10,7 @@ import com.javarush.model.entity.User;
 import com.javarush.model.entity.enums.Role;
 import com.javarush.model.repository.TaskRepository;
 import com.javarush.model.repository.UserRepository;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -34,7 +34,7 @@ public class UserService {
 
     @Transactional
     public User createUser(UserRegistrationDto dto) {
-        log.info("Сщздание пользователя");
+        log.info("Создание пользователя");
         if (userRepository.existsActiveByEmail(dto.getEmail())) {
             throw new UserAlreadyExistsException("Пользователь с таким email уже существует");
         }
@@ -80,7 +80,7 @@ public class UserService {
     }
 
     public Page<User> getAllUsers(Pageable pageable) {
-        return (Page<User>) userRepository.findAllActive();
+        return userRepository.findAllActive(pageable);
     }
 
     public User updateUser(Long id, UserUpdateDto dto) {
@@ -97,12 +97,12 @@ public class UserService {
             user.setEmail(dto.getEmail());
         }
 
-        if (dto.getUserName() != null && !dto.getUserName().isEmpty()) {
-            if (userRepository.existsActiveByUsernameAndIdNot(dto.getUserName(), id)) {
+        if (dto.getUsername() != null && !dto.getUsername().isEmpty()) {
+            if (userRepository.existsActiveByUsernameAndIdNot(dto.getUsername(), id)) {
                 throw new UserAlreadyExistsException("Пользователь с таким именем уже существует");
             }
 
-            user.setUsername(dto.getUserName());
+            user.setUsername(dto.getUsername());
         }
 
         userRepository.save(user);
@@ -118,7 +118,8 @@ public class UserService {
                 );
 
         if (!passwordEncoder.matches(dto.getOldPassword(), userWithOldPassword.getPassword())) {
-            System.out.println("Введен неверный пароль");
+            log.warn("Неверный пароль для user id={}", id);
+            throw new InvalidPasswordException("Неверный старый пароль");
         }
 
         String updatedPassword = passwordEncoder.encode(dto.getNewPassword());
@@ -192,8 +193,8 @@ public class UserService {
         user.setDeletedAt(null);
         user.setDeletedBy(null);
 
-        String restoredEmail = Arrays.stream(user.getEmail().split("_")).findFirst().get();
-        String restoredUsername = Arrays.stream(user.getUsername().split("_")).findFirst().get();
+        String restoredEmail = Arrays.stream(user.getEmail().split("_")).findFirst().orElse(user.getEmail());
+        String restoredUsername = Arrays.stream(user.getUsername().split("_")).findFirst().orElse(user.getUsername());
 
         user.setUsername(restoredUsername);
         user.setEmail(restoredEmail);

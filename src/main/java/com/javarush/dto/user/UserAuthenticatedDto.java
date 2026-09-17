@@ -1,6 +1,7 @@
 package com.javarush.dto.user;
 
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
@@ -9,15 +10,28 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+@Schema(description = "Запрос на авторизацию")
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
 @Setter
 public class UserAuthenticatedDto {
+
+    @Schema(
+            description = "Имя пользователя",
+            example = "ivan_ivanov",
+            requiredMode = Schema.RequiredMode.REQUIRED
+    )
     @NotBlank(message = "Имя обязательно")
     @Size(min = 3, max = 20, message = "Имя от 3 до 20 символов")
-    private String userName;
+    private String username;
 
+    @Schema(
+            description = "Пароль",
+            example = "Pass123@",
+            requiredMode = Schema.RequiredMode.REQUIRED,
+            format = "password"
+    )
     @NotBlank(message = "Пароль обязателен")
     @Pattern(
             regexp = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=])(?=\\S+$).{8,20}$",

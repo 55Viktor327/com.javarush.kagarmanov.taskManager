@@ -1,10 +1,7 @@
 package com.javarush.exception;
 
 public class UserAlreadyExistsException extends RuntimeException{
-    public UserAlreadyExistsException(String message){
-
-    }
-
-    public UserAlreadyExistsException() {
+    public UserAlreadyExistsException(String message) {
+        super(message);
     }
 }

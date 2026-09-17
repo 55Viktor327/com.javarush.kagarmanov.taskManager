@@ -20,7 +20,7 @@ public class OpenApiConfig {
                         .description("REST API для управления задачами")
                         .version("1.0.0")
                         .contact(new Contact()
-                                .name("Viktor")
+                                .name("Виктор Кагарманов")
                                 .email("svb28rus@yandex.ru"))
                 )
                 .addSecurityItem(new SecurityRequirement().addList("Bearer"))

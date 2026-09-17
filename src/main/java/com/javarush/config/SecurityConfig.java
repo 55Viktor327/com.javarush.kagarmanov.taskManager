@@ -63,7 +63,11 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/tasks/owner/**").hasAnyRole("USER", "ADMIN", "SUPER_ADMIN")
                         .requestMatchers(HttpMethod.GET, "/tasks/assignee/**").hasAnyRole("USER", "ADMIN", "SUPER_ADMIN")
                         .requestMatchers(HttpMethod.GET, "/tasks/status/**").hasAnyRole("USER", "ADMIN", "SUPER_ADMIN")
-                        .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
+                        .requestMatchers("/swagger-ui/**").permitAll()
+                        .requestMatchers("/swagger-ui.html").permitAll()
+                        .requestMatchers("/v3/api-docs/**").permitAll()
+                        .requestMatchers("/swagger-resources/**").permitAll()
+                        .requestMatchers("/webjars/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

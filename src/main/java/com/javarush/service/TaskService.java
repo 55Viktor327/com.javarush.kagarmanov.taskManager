@@ -281,7 +281,8 @@ public class TaskService {
 
         task.setUpdatedAt(LocalDateTime.now());
         taskRepository.save(task);
-        log.info("Пользователь username={} исключен из задачи title={}", userRepository.findActiveById(userId).get().getUsername(), task.getTitle());
+        log.info("Пользователь userId={} исключён из задачи id={}, title={}",
+                userId, taskId, task.getTitle());
         return task;
     }
 
