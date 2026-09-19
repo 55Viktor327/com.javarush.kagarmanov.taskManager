@@ -458,11 +458,7 @@ src/
 
 ## 👤 Автор
 
-**Ваше Имя**
+**Виктор Кагарманов**
 
-- GitHub: [@your-username](https://github.com/your-username)
-- Email: your.email@example.com
-
----
-
-Сделано с ❤️ на Java и Spring Boot
+- GitHub: [55Viktor327](https://github.com/55Viktor327/MAIN.git))
+- Email: svb28rus@yandex.ru
