@@ -30,15 +30,18 @@ jwt:
 logging:
   level:
     root: INFO
-    com.javarush: DEBUG
+    com.javarush: INFO
+    com.javarush.config.MdcFilter: INFO
     org.springframework.security: INFO
-    org.springframework.boot.web.servlet: DEBUG
-    org.springframework.web: INFO
-    org.hibernate.sql: DEBUG
-    org.hibernate.orm.jdbc.bind: TRACE
+    org.springframework.web: WARN
+    org.springframework.boot.web.servlet: WARN
+    org.hibernate: WARN
+    org.hibernate.sql: WARN
+    org.hibernate.orm.jdbc.bind: WARN
+    org.apache: WARN
+    com.zaxxer.hikari: WARN
   file:
     name: logs/taskmanager.log
-
   logback:
     rollingpolicy:
       max-file-size: 10MB
@@ -62,4 +65,7 @@ management:
   endpoints:
     web:
       exposure:
-        include: "*"
+        include: health, info, prometheus, metrics
+  metrics:
+    tags:
+      application: task-manager
