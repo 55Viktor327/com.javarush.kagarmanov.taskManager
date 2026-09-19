@@ -330,7 +330,7 @@ public class TaskService {
     }
 
     @Transactional
-    public Task restoreTask(Long id){
+    public TaskResponseDto restoreTask(Long id){
         Task task = taskRepository.findDeletedById(id)
                 .orElseThrow(
                         () -> new TaskNotFoundException("Задача не найдена")
@@ -347,7 +347,7 @@ public class TaskService {
         Task restored = taskRepository.save(task);
         log.info("Задача title={} восстановлена в БД", task.getTitle());
 
-        return restored;
+        return TaskResponseDto.fromEntity(restored);
     }
 
     @Transactional(readOnly = true)

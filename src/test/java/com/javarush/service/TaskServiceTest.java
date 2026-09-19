@@ -1,6 +1,7 @@
 package com.javarush.service;
 
 import com.javarush.dto.task.TaskCreateRequest;
+import com.javarush.dto.task.TaskResponseDto;
 import com.javarush.dto.task.UpdateTitleRequest;
 import com.javarush.exception.*;
 import com.javarush.model.entity.Task;
@@ -353,10 +354,14 @@ public class TaskServiceTest {
         when(taskRepository.findDeletedById(1L)).thenReturn(Optional.of(task));
         when(taskRepository.save(any(Task.class))).thenAnswer(i -> i.getArgument(0));
 
-        Task result = taskService.restoreTask(1L);
+        TaskResponseDto result = taskService.restoreTask(1L);
 
-        assertThat(result.isDeleted()).isFalse();
-        assertThat(result.getDeletedAt()).isNull();
-        assertThat(result.getDeletedBy()).isNull();
+        assertThat(result).isNotNull();
+        assertThat(result.getId()).isEqualTo(1L);
+        assertThat(result.getTitle()).isEqualTo(task.getTitle());
+
+        assertThat(task.isDeleted()).isFalse();
+        assertThat(task.getDeletedAt()).isNull();
+        assertThat(task.getDeletedBy()).isNull();
     }
 }
