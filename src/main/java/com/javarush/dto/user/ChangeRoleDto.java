@@ -2,7 +2,7 @@ package com.javarush.dto.user;
 
 import com.javarush.model.entity.enums.Role;
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -14,7 +14,7 @@ import lombok.Setter;
 @Setter
 @Schema(description = "Запрос на смену роли")
 public class ChangeRoleDto {
-    @NotBlank(message = "Роль обязательна")
+    @NotNull(message = "Роль обязательна")
     @Schema(description = "Новая роль", example = "ADMIN")
     private Role role;
 }

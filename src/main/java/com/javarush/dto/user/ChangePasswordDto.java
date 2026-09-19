@@ -1,7 +1,7 @@
 package com.javarush.dto.user;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -16,10 +16,10 @@ import lombok.Setter;
 public class ChangePasswordDto {
 
     @Schema(description = "Старый пароль", example = "OldPass123@", format = "password")
-    @NotBlank(message = "Старый пароль обязателен")
+    @NotNull(message = "Старый пароль обязателен")
     private String oldPassword;
 
-    @NotBlank(message = "Новый пароль обязателен")
+    @NotNull(message = "Новый пароль обязателен")
     @Pattern(
             regexp = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=])(?=\\S+$).{8,20}$",
             message = "Пароль должен содержать от 8 до 20 символов, " +

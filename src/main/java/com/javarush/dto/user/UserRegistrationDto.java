@@ -1,8 +1,9 @@
 package com.javarush.dto.user;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+
 import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
@@ -23,7 +24,7 @@ public class UserRegistrationDto {
             minLength = 3,
             maxLength = 20
     )
-    @NotBlank(message = "Имя обязательно")
+    @NotNull(message = "Имя обязательно")
     @Size(min = 3, max = 20, message = "Имя от 3 до 20 символов")
     private String userName;
 
@@ -33,7 +34,7 @@ public class UserRegistrationDto {
             requiredMode = Schema.RequiredMode.REQUIRED,
             format = "email"
     )
-    @NotBlank(message = "Email обязателен")
+    @NotNull(message = "Email обязателен")
     @Email(message = "Неверный формат email")
     private String email;
 
@@ -45,7 +46,7 @@ public class UserRegistrationDto {
             maxLength = 20,
             format = "password"
     )
-    @NotBlank(message = "Пароль обязателен")
+    @NotNull(message = "Пароль обязателен")
     @Pattern(
             regexp = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=])(?=\\S+$).{8,20}$",
             message = "Пароль должен содержать от 8 до 20 символов, " +
