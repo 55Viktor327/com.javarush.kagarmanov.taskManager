@@ -14,6 +14,12 @@ target/
 *.iws
 *.iml
 *.ipr
+logs/
+*.log
+Постановка_финал_5.txt
+.env
+.gigacode
+.gigaide
 
 ### Eclipse ###
 .apt_generated

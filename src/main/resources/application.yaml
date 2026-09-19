@@ -9,9 +9,9 @@ spring:
 
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://localhost:5432/taskmanager
-    username: postgres
-    password: postgres
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/taskmanager}
+    username: ${SPRING_DATASOURCE_URL:postgres}
+    password: ${SPRING_DATASOURCE_URL:postgres}
 
   jpa:
     hibernate:
@@ -23,10 +23,9 @@ spring:
         format_sql: true
 
 jwt:
-  secret: lA6JFIP/VnFgRFB717pog4Hqud5O0mtlWtGi5P7L8nY=
-  expiration: 86400000
-  refresh-expiration: 604800000
-
+  secret: ${JWT_SECRET}
+  expiration: ${JWT_EXPIRATION}
+  refresh-expiration: ${JWT_REFRESH_EXPIRATION}
 
 logging:
   level:
@@ -58,3 +57,9 @@ springdoc:
     operationsSorted: method
     tagsSorted: alpha
   show-actuator: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
