@@ -154,6 +154,7 @@ public class UserController {
             @ApiResponse(responseCode = "404", description = "Пользователь не найден")
     })
     @PutMapping("/{id}/role")
+    @PreAuthorize("hasRole('SUPER_ADMIN') or #id == authentication.principal.id")
     public ResponseEntity<String> changeRole(@PathVariable Long id,
                                            @Valid
                                            @RequestBody ChangeRoleDto dto) {

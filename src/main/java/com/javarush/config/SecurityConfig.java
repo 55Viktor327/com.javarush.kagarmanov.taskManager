@@ -50,6 +50,7 @@ public class SecurityConfig {
                         .requestMatchers("/users/deleted/**").hasRole("SUPER_ADMIN")
                         .requestMatchers("/users/*/restore").hasRole("SUPER_ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/users/**").hasRole("SUPER_ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/users/*/role").hasRole("SUPER_ADMIN")
                         .requestMatchers("/tasks/deleted/**").hasRole("SUPER_ADMIN")
                         .requestMatchers("/tasks/*/restore").hasRole("SUPER_ADMIN")
                         .requestMatchers(HttpMethod.POST, "/tasks/*/assignees/**").hasAnyRole("SUPER_ADMIN", "ADMIN")
@@ -62,6 +63,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/tasks/owner/**").hasAnyRole("USER", "ADMIN", "SUPER_ADMIN")
                         .requestMatchers(HttpMethod.GET, "/tasks/assignee/**").hasAnyRole("USER", "ADMIN", "SUPER_ADMIN")
                         .requestMatchers(HttpMethod.GET, "/tasks/status/**").hasAnyRole("USER", "ADMIN", "SUPER_ADMIN")
+
                         .requestMatchers("/actuator/**").permitAll()
                         .requestMatchers("/swagger-ui/**").permitAll()
                         .requestMatchers("/swagger-ui.html").permitAll()

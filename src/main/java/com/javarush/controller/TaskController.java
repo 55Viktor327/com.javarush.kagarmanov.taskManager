@@ -340,7 +340,6 @@ public class TaskController {
     public ResponseEntity<TaskResponseDto> restoreTask(
             @Parameter(description = "ID задачи", example = "1")
             @PathVariable Long id) {
-        Task task = taskService.restoreTask(id);
-        return ResponseEntity.ok(TaskResponseDto.fromEntity(task));
+        return ResponseEntity.ok(taskService.restoreTask(id));
     }
 }
